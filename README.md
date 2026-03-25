@@ -12,6 +12,10 @@ It analyzes user interactions, adapts persona/state in real time, and recommends
 5. Returns dynamic recommendations and next-best actions to the UI.
 6. Supports voice input and voice-persona inference endpoints.
 
+## Architecture / Flow Diagram
+![FlowET](https://github.com/user-attachments/assets/bd7cfbf7-c46b-449f-a9a8-841bee563897)
+
+
 ## Repository Structure
 
 1. `backend/`: FastAPI app, recommendation engine, profile state logic, voice/AI endpoints.
