@@ -1,0 +1,10 @@
+fastapi>=0.111.0
+uvicorn>=0.30.0
+pydantic>=2.7.0
+pydantic-settings>=2.2.0
+motor>=3.3.0
+openai>=1.30.0
+python-dotenv>=1.0.0
+numpy
+transformers>=4.44.0
+sentence-transformers>=3.0.1
