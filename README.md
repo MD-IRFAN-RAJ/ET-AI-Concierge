@@ -12,10 +12,6 @@ It analyzes user interactions, adapts persona/state in real time, and recommends
 5. Returns dynamic recommendations and next-best actions to the UI.
 6. Supports voice input and voice-persona inference endpoints.
 
-## Architecture / Flow Diagram
-![FlowET](https://github.com/user-attachments/assets/bd7cfbf7-c46b-449f-a9a8-841bee563897)
-
-
 ## Repository Structure
 
 1. `backend/`: FastAPI app, recommendation engine, profile state logic, voice/AI endpoints.
@@ -201,19 +197,7 @@ uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
 ## Architecture & Flow
 
 High-level architecture and user flow for the ET AI Concierge application.
-
-```mermaid
-flowchart LR
-	U[User Browser] -->|Interact / Voice| F[Frontend (Next.js)]
-	F -->|REST / WebSocket| B[Backend (FastAPI)]
-	B --> R[RL Bandit Engine (`rl_engine`)]
-	B --> M[HF Models & AI Services]
-	B --> S[Event Memory / Store]
-	R --> B
-	M --> B
-	S --> R
-	click F "#" "Frontend serves UI, captures events"
-```
+![FlowET](https://github.com/user-attachments/assets/bd7cfbf7-c46b-449f-a9a8-841bee563897)
 
 - **Frontend (Next.js)**: Handles onboarding, voice input, dashboard, marketplace and intelligence UI. Calls backend APIs via `BACKEND_API_BASE_URL`.
 - **Backend (FastAPI)**: Serves AI/chat endpoints, profile initialization, tracking, and the bandit-based ranking engine.
