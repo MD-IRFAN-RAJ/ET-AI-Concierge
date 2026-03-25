@@ -202,6 +202,19 @@ uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
 
 High-level architecture and user flow for the ET AI Concierge application.
 
+```mermaid
+flowchart LR
+	U[User Browser] -->|Interact / Voice| F[Frontend (Next.js)]
+	F -->|REST / WebSocket| B[Backend (FastAPI)]
+	B --> R[RL Bandit Engine (`rl_engine`)]
+	B --> M[HF Models & AI Services]
+	B --> S[Event Memory / Store]
+	R --> B
+	M --> B
+	S --> R
+	click F "#" "Frontend serves UI, captures events"
+```
+
 - **Frontend (Next.js)**: Handles onboarding, voice input, dashboard, marketplace and intelligence UI. Calls backend APIs via `BACKEND_API_BASE_URL`.
 - **Backend (FastAPI)**: Serves AI/chat endpoints, profile initialization, tracking, and the bandit-based ranking engine.
 - **Intelligence layer**: `rl_engine` computes scores and recommends next-best actions; online signals are stored in lightweight in-memory event memory.
