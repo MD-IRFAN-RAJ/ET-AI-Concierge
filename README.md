@@ -215,7 +215,6 @@ Screenshots (local):
 
 ![Landing and Concierge](docs/screenshots/image-1774423051952.png)
 ![Dashboard view](docs/screenshots/image-1774423457059.png)
-![Marketplace listing](docs/screenshots/image-1774427227488.png)
 ![Product detail](docs/screenshots/image-1774428104488.png)
 ![Voice input demo](docs/screenshots/image-1774428122057.png)
 ![Recommendation panel](docs/screenshots/image-1774428144849.png)
