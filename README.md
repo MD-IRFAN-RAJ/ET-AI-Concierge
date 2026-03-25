@@ -193,9 +193,6 @@ uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
 5. `POST /api/v1/track/`
 6. `POST /api/v1/ai/voice-chat`
 
-## License
-
-Add your license file and policy details if this repository is intended for public reuse.
 
 ## Architecture & Flow
 
@@ -227,4 +224,3 @@ Screenshots (local):
 ![Action tracking log](docs/screenshots/image-1774428173534.png)
 ![Example notification](docs/screenshots/image-1774428181782.png)
 
-If you'd like different screenshots or a smaller gallery for the public README, tell me which ones to keep.
