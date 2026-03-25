@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Any, List
+import os
 
+import requests
 import numpy as np
 
 PERSONA_LABELS = [
@@ -49,7 +51,42 @@ def _get_embedder():
         return None
 
 
+def _call_hf_model(model: str, payload: dict, timeout: int = 30) -> Any:
+    """Call the Hugging Face Inference API for a given model.
+
+    Returns parsed JSON on success or None on failure or if no token is configured.
+    """
+    token = os.getenv("HF_API_TOKEN")
+    if not token:
+        return None
+
+    url = f"https://api-inference.huggingface.co/models/{model}"
+    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        resp = requests.post(url, headers=headers, json=payload, timeout=timeout)
+        resp.raise_for_status()
+        return resp.json()
+    except Exception:
+        return None
+
+
 def detect_persona(text: str) -> Dict[str, float | str]:
+    # Prefer Hugging Face Inference API when token is present to avoid local downloads
+    if os.getenv("HF_API_TOKEN"):
+        hf_model = os.getenv("HF_ZERO_SHOT_MODEL", "facebook/bart-large-mnli")
+        resp = _call_hf_model(hf_model, {"inputs": text, "parameters": {"candidate_labels": PERSONA_LABELS}})
+        if resp and isinstance(resp, dict):
+            labels = resp.get("labels") or resp.get("label")
+            scores = resp.get("scores") or resp.get("score")
+            if labels and scores:
+                try:
+                    top_label = str(labels[0])
+                    top_score = float(scores[0])
+                    return {"persona": top_label, "confidence": round(top_score, 4)}
+                except Exception:
+                    pass
+
+    # Fall back to local model if available
     classifier = _get_zero_shot_pipeline()
     if classifier is None:
         return _fallback_persona(text)
@@ -94,6 +131,36 @@ def _fallback_product_scores(user_input: str) -> Dict[str, float]:
 
 
 def get_product_scores(user_input: str) -> Dict[str, float]:
+    # Prefer Hugging Face Inference API embeddings when token is present
+    if os.getenv("HF_API_TOKEN"):
+        hf_model = os.getenv("HF_EMBEDDER_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+        texts = [user_input, *PRODUCT_DESCRIPTIONS.values()]
+        resp = _call_hf_model(hf_model, {"inputs": texts})
+        # Expecting a list of vectors
+        if resp:
+            embeddings = None
+            if isinstance(resp, list) and all(isinstance(x, list) for x in resp):
+                embeddings = resp
+            elif isinstance(resp, dict) and "embeddings" in resp:
+                embeddings = resp["embeddings"]
+
+            if embeddings:
+                try:
+                    embeddings = [np.asarray(e, dtype=np.float32) for e in embeddings]
+                    user_vec = np.asarray(embeddings[0], dtype=np.float32)
+
+                    similarities: Dict[str, float] = {}
+                    for idx, product_name in enumerate(PRODUCT_DESCRIPTIONS.keys(), start=1):
+                        product_vec = np.asarray(embeddings[idx], dtype=np.float32)
+                        denom = float(np.linalg.norm(user_vec) * np.linalg.norm(product_vec))
+                        sim = 0.0 if denom == 0 else float(np.dot(user_vec, product_vec) / denom)
+                        similarities[product_name] = max(0.0, (sim + 1.0) / 2.0)
+
+                    return _normalize_percentages(similarities)
+                except Exception:
+                    return _fallback_product_scores(user_input)
+
+    # Fall back to local embedder if available
     embedder = _get_embedder()
     if embedder is None:
         return _fallback_product_scores(user_input)
