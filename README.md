@@ -196,3 +196,35 @@ uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
 ## License
 
 Add your license file and policy details if this repository is intended for public reuse.
+
+## Architecture & Flow
+
+High-level architecture and user flow for the ET AI Concierge application.
+
+- **Frontend (Next.js)**: Handles onboarding, voice input, dashboard, marketplace and intelligence UI. Calls backend APIs via `BACKEND_API_BASE_URL`.
+- **Backend (FastAPI)**: Serves AI/chat endpoints, profile initialization, tracking, and the bandit-based ranking engine.
+- **Intelligence layer**: `rl_engine` computes scores and recommends next-best actions; online signals are stored in lightweight in-memory event memory.
+
+User flow:
+1. User opens frontend and completes concierge onboarding.
+2. Frontend posts user actions to `POST /api/v1/track/` and requests recommendations from `POST /api/v1/recommendations`.
+3. Backend updates profile and uses the bandit engine to return personalized items.
+4. Frontend renders recommendations and logs conversions back to backend.
+
+Screenshots (local):
+
+<!-- Gallery: copied screenshots are in docs/screenshots -->
+
+![Landing and Concierge](docs/screenshots/image-1774423051952.png)
+![Dashboard view](docs/screenshots/image-1774423457059.png)
+![Marketplace listing](docs/screenshots/image-1774427227488.png)
+![Product detail](docs/screenshots/image-1774428104488.png)
+![Voice input demo](docs/screenshots/image-1774428122057.png)
+![Recommendation panel](docs/screenshots/image-1774428144849.png)
+![Profile & activity](docs/screenshots/image-1774428152260.png)
+![Intelligence view](docs/screenshots/image-1774428159519.png)
+![Onboarding flow](docs/screenshots/image-1774428166751.png)
+![Action tracking log](docs/screenshots/image-1774428173534.png)
+![Example notification](docs/screenshots/image-1774428181782.png)
+
+If you'd like different screenshots or a smaller gallery for the public README, tell me which ones to keep.
