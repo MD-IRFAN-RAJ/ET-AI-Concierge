@@ -45,7 +45,9 @@ It analyzes user interactions, adapts persona/state in real time, and recommends
 
 1. Frontend: Next.js 16, React 19, TypeScript, Tailwind v4, Framer Motion.
 2. Backend: FastAPI, Pydantic, Uvicorn.
-3. Intelligence: RL bandit ranking plus lightweight HF-based scoring/fallback.
+3. Intelligence: RL bandit ranking plus Hugging Face model-based scoring/fallback using:
+	- `facebook/bart-large-mnli` (zero-shot persona inference)
+	- `sentence-transformers/all-MiniLM-L6-v2` (text embedding similarity for product scoring)
 
 ## Prerequisites (Any Computer)
 
@@ -200,8 +202,8 @@ High-level architecture and user flow for the ET AI Concierge application.
 ![FlowET](https://github.com/user-attachments/assets/bd7cfbf7-c46b-449f-a9a8-841bee563897)
 
 - **Frontend (Next.js)**: Handles onboarding, voice input, dashboard, marketplace and intelligence UI. Calls backend APIs via `BACKEND_API_BASE_URL`.
-- **Backend (FastAPI)**: Serves AI/chat endpoints, profile initialization, tracking, and the bandit-based ranking engine.
-- **Intelligence layer**: `rl_engine` computes scores and recommends next-best actions; online signals are stored in lightweight in-memory event memory.
+- **Backend (FastAPI)**: Serves AI/chat endpoints, profile initialization, tracking, and the bandit-based ranking engine; voice/AI routes also invoke Hugging Face model signals.
+- **Intelligence layer**: `rl_engine` computes scores and recommends next-best actions, blended with Hugging Face model outputs from `facebook/bart-large-mnli` (persona detection) and `sentence-transformers/all-MiniLM-L6-v2` (product-text semantic scoring); online signals are stored in lightweight in-memory event memory.
 
 User flow:
 1. User opens frontend and completes concierge onboarding.
