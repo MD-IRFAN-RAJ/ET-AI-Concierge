@@ -55,9 +55,8 @@ export function useVoice() {
       };
 
       recognition.onend = () => {
-        if (status === "listening") {
-          setStatus("idle");
-        }
+        // Use functional state update to avoid stale closure status checks.
+        setStatus((prev) => (prev === "listening" ? "idle" : prev));
       };
 
       recognition.onresult = async (event) => {
@@ -68,13 +67,19 @@ export function useVoice() {
         }
 
         setStatus("processing");
-        const reply = await onTranscript(transcript);
+        try {
+          const reply = await onTranscript(transcript);
 
-        if (reply && reply.trim()) {
-          setStatus("speaking");
-          await speakResponse(reply);
+          if (reply && reply.trim()) {
+            setStatus("speaking");
+            await speakResponse(reply);
+          }
+        } catch (err) {
+          console.error("Voice transcript handling failed", err);
+          setError("Voice processing failed. Please try again.");
+        } finally {
+          setStatus("idle");
         }
-        setStatus("idle");
       };
 
       recognition.start();

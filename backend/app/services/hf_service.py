@@ -71,7 +71,7 @@ def _call_hf_model(model: str, payload: dict, timeout: int = 30) -> Any:
 
 
 def detect_persona(text: str) -> Dict[str, float | str]:
-    # Prefer Hugging Face Inference API when token is present to avoid local downloads
+    # If token is configured, use hosted inference and avoid local heavyweight model loads.
     if os.getenv("HF_API_TOKEN"):
         hf_model = os.getenv("HF_ZERO_SHOT_MODEL", "facebook/bart-large-mnli")
         resp = _call_hf_model(hf_model, {"inputs": text, "parameters": {"candidate_labels": PERSONA_LABELS}})
@@ -85,8 +85,10 @@ def detect_persona(text: str) -> Dict[str, float | str]:
                     return {"persona": top_label, "confidence": round(top_score, 4)}
                 except Exception:
                     pass
+        # If HF API is unavailable, use heuristic fallback (do not trigger local model downloads).
+        return _fallback_persona(text)
 
-    # Fall back to local model if available
+    # No token configured: fall back to local model if available
     classifier = _get_zero_shot_pipeline()
     if classifier is None:
         return _fallback_persona(text)
@@ -131,7 +133,7 @@ def _fallback_product_scores(user_input: str) -> Dict[str, float]:
 
 
 def get_product_scores(user_input: str) -> Dict[str, float]:
-    # Prefer Hugging Face Inference API embeddings when token is present
+    # If token is configured, use hosted embeddings and avoid local heavyweight model loads.
     if os.getenv("HF_API_TOKEN"):
         hf_model = os.getenv("HF_EMBEDDER_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
         texts = [user_input, *PRODUCT_DESCRIPTIONS.values()]
@@ -160,7 +162,10 @@ def get_product_scores(user_input: str) -> Dict[str, float]:
                 except Exception:
                     return _fallback_product_scores(user_input)
 
-    # Fall back to local embedder if available
+            # If HF API is unavailable, use heuristic fallback (do not trigger local model downloads).
+            return _fallback_product_scores(user_input)
+
+    # No token configured: fall back to local embedder if available
     embedder = _get_embedder()
     if embedder is None:
         return _fallback_product_scores(user_input)
